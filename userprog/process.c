@@ -51,6 +51,9 @@ process_create_initd (const char *file_name) {
 	strlcpy (fn_copy, file_name, PGSIZE);
 
 	/* Create a new thread to execute FILE_NAME. */
+	char* save_ptr;
+	strtok_r(file_name, " ", &save_ptr);
+
 	tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
 	if (tid == TID_ERROR)
 		palloc_free_page (fn_copy);
@@ -164,7 +167,7 @@ int
 process_exec (void *f_name) {
 	char *file_name = f_name;
 	bool success;
-
+	struct thread *current=thread_current();
 	/* We cannot use the intr_frame in the thread structure.
 	 * This is because when current thread rescheduled,
 	 * it stores the execution information to the member. */
@@ -176,14 +179,42 @@ process_exec (void *f_name) {
 	/* We first kill the current context */
 	process_cleanup ();
 
+	int argc=0;
+	char *argv[32];
+	char *token;
+	char *save_ptr;
+
+	token=strtok_r(file_name, " ", &save_ptr);
+	while(token!=NULL)
+	{
+		argv[argc]=token;
+		token = strtok_r (NULL, " ", &save_ptr);
+		argc++;
+	}
+
+	//for (token = strtok_r (file_name, " ", &save_ptr); token != NULL; token = strtok_r (NULL, " ", &save_ptr))
+	//{
+	//	argv[argc]=token;
+	//	argc++;
+	//}
 	/* And then load the binary */
 	success = load (file_name, &_if);
 
 	/* If load failed, quit. */
-	palloc_free_page (file_name);
+	
 	if (!success)
+	{
+		palloc_free_page (file_name);
 		return -1;
+	}
 
+	arg_pass(argv, argc, _if.rsp);
+	_if.R.rdi=argc;
+	_if.R.rsi=_if.rsp+8;
+	
+	hex_dump(_if.rsp, _if.rsp, USER_STACK-_if.rsp, true);
+
+	palloc_free_page (file_name);
 	/* Start switched process. */
 	do_iret (&_if);
 	NOT_REACHED ();
@@ -204,6 +235,8 @@ process_wait (tid_t child_tid UNUSED) {
 	/* XXX: Hint) The pintos exit if process_wait (initd), we recommend you
 	 * XXX:       to add infinite loop here before
 	 * XXX:       implementing the process_wait. */
+	while(true)
+	{}
 	return -1;
 }
 
@@ -329,6 +362,8 @@ load (const char *file_name, struct intr_frame *if_) {
 	bool success = false;
 	int i;
 
+	
+
 	/* Allocate and activate page directory. */
 	t->pml4 = pml4_create ();
 	if (t->pml4 == NULL)
@@ -416,15 +451,43 @@ load (const char *file_name, struct intr_frame *if_) {
 
 	/* TODO: Your code goes here.
 	 * TODO: Implement argument passing (see project2/argument_passing.html). */
-
+	
 	success = true;
 
 done:
 	/* We arrive here whether the load is successful or not. */
-	file_close (file);
+	//file_close (file);
 	return success;
 }
 
+void arg_pass(char **argv_input, int argc, void* rsp)
+{
+	void **argv_addr[argc];
+	for(int i=argc-1;i>=0;i--)
+	{
+		rsp=rsp-strlen(argv_input[i]+1);
+		memcpy(rsp, argv_input[i], strlen(argv_input[i]+1));
+		argv_addr[i]=rsp;
+	}
+
+	if((uint8_t)rsp%8!=0)
+	{
+		rsp--;
+		memset(rsp, 0, 1);
+	}
+	rsp-=8;
+	memset(rsp, 0, 8);
+
+	for(int j=argc-1;j>=0;j--)
+	{
+		rsp=rsp-8;
+		memcpy(rsp, argv_addr[j], 8);
+	}
+
+	rsp-=8;
+	memset(rsp, 0, 8);
+
+}
 
 /* Checks whether PHDR describes a valid, loadable segment in
  * FILE and returns true if so, false otherwise. */
@@ -637,3 +700,4 @@ setup_stack (struct intr_frame *if_) {
 	return success;
 }
 #endif /* VM */
+

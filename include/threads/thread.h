@@ -1,10 +1,12 @@
 #ifndef THREADS_THREAD_H
 #define THREADS_THREAD_H
+typedef int FPReal;
 
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
 #include "threads/interrupt.h"
+#include "threads/synch.h"
 #ifdef VM
 #include "vm/vm.h"
 #endif
@@ -91,9 +93,40 @@ struct thread {
 	enum thread_status status;          /* Thread state. */
 	char name[16];                      /* Name (for debugging purposes). */
 	int priority;                       /* Priority. */
+	int priority_original; 				/* Original priority - to be accessed in lock_release */
+	int64_t suspend_ticks; 				/* Ticks to be suspended for. */
+	//struct semaphore sema;
+	//struct lock *lock; 					/* Lock of current thread - NULL if not blocked */
+	struct lock *lock_waiting; 			/* The lock that the current thread is waiting for */
+	//int donate_flag;					/* 1 if the thread donated the priority to other thread - otherwise 0 */
+	//int donated_flag;					/* 1 if the thread is donated the priority by other thread - otherwise 0 */
+	struct list donate_list;			/* List of priority donors of the thread (Multiple donation is possible) */
+	
+	struct list lock_list; 				/* List of locks the thread holds */
+	//struct list donee;				/* List of priority donees of the thread */
+	//struct thread *lock_holder;		/* The lock holder of current blocked thread */
+	int nice_value;
+	FPReal recent_cpu;
+	/* Projecdt 2 : USERPROG project */
+	int exit_status; 					/* Userprog project : used in exit() system call */
+	//struct intr_frame parent_intr_frame; /* Interrupt frame of parent process - to be copied to child process in process_fork() */
+	//struct thread* parent;
+	struct list child_list;				/* List of child processes - fork() can be done multiple times*/
+	struct semaphore fork_sema;			/* Make the parent wait until child process finishes fork() */
+	struct semaphore wait_sema; 		/* Make the parent thread wait for child processes and retrieve the exit status */
+	struct semaphore exit_sema;			/* Make the parent thread wait until child processes exits */
+	//struct lock open_lock;
+	struct file **descriptor_table;		/* File descriptor table - exist in each processes*/
+	struct file *running_executable;    /* The name of executable currently running in the process */
+	int open_index;						/* The index of opened file in file descriptor table (FDT)*/
+	//int fdt_limit;						/* Limit of FDT length - set to PGSIZE/file descriptor pointer size == PGSIZE/8 */
 
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
+	struct list_elem donate_elem; 		/* Element to find the thread in donate_list*/
+	struct list_elem elem2; 			/* List element for every_list */
+	/* Project 2 : USERPROG project */
+	struct list_elem child_elem; 		/* List element for child_list */
 
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
@@ -131,16 +164,29 @@ tid_t thread_tid (void);
 const char *thread_name (void);
 
 void thread_exit (void) NO_RETURN;
+void ready_list_iterate(void);
 void thread_yield (void);
 
+void thread_suspend (int64_t);
+bool thread_tick_compare(const struct list_elem *temp1, const struct list_elem *temp2, void *aux);
+void thread_unsuspend (int64_t);
+
+bool thread_priority_compare(const struct list_elem *temp1, const struct list_elem *temp2, void *aux);
+void thread_donate(struct thread *thread);
 int thread_get_priority (void);
 void thread_set_priority (int);
-
+bool whether_to_yield(void);
+void mlfqs_set_priority(struct thread *thread);
 int thread_get_nice (void);
 void thread_set_nice (int);
-int thread_get_recent_cpu (void);
-int thread_get_load_avg (void);
-
+FPReal thread_get_recent_cpu (void);
+FPReal thread_get_load_avg (void);
+void calculate_load_avg (void);
+void thread_calculate_recent_cpu(struct thread *thread);
+void increment_recent_cpu(struct thread *thread);
+void every_calculate_mlfqs_priority(void);
+void every_calculate_recent_cpu(void);
 void do_iret (struct intr_frame *tf);
 
 #endif /* threads/thread.h */
+
