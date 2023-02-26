@@ -115,7 +115,7 @@ struct thread {
 	struct semaphore fork_sema;			/* Make the parent wait until child process finishes fork() */
 	struct semaphore wait_sema; 		/* Make the parent thread wait for child processes and retrieve the exit status */
 	struct semaphore exit_sema;			/* Make the parent thread wait until child processes exits */
-	//struct lock open_lock;
+	struct lock open_lock;				/* Lock to implement synchronization of file open/close */
 	struct file **descriptor_table;		/* File descriptor table - exist in each processes*/
 	struct file *running_executable;    /* The name of executable currently running in the process */
 	int open_index;						/* The index of opened file in file descriptor table (FDT)*/

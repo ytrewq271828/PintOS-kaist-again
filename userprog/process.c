@@ -79,8 +79,27 @@ initd (void *f_name) {
 tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	/* Clone current thread to new thread.*/
-	return thread_create (name,
-			PRI_DEFAULT, __do_fork, thread_current ());
+	struct thread *current=thread_current();
+
+	memcpy(&current->tf, if_, sizeof(struct intr_frame));
+	tid_t fork_tid=thread_create (name, PRI_DEFAULT, __do_fork, thread_current ());
+	if(fork_tid==TID_ERROR)
+	{
+		return TID_ERROR;
+	}
+	struct list child_list=current->child_list;
+	struct list_elem *e;
+
+	for(e=list_begin(&child_list);e!=list_end(&child_list);e=list_next(e))
+	{
+		struct thread *candidate=list_entry(e, struct thread, child_elem);
+		if(candidate->tid==fork_tid)
+		{
+			sema_down(&candidate->fork_sema);
+			return fork_tid;
+		}
+	}
+
 }
 
 #ifndef VM
@@ -95,12 +114,19 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
 	bool writable;
 
 	/* 1. TODO: If the parent_page is kernel page, then return immediately. */
-
+	if(is_kernel_vaddr(va))
+	{
+		return;
+	}
 	/* 2. Resolve VA from the parent's page map level 4. */
 	parent_page = pml4_get_page (parent->pml4, va);
-
+	if(parent_page==NULL)
+	{
+		return false;
+	}
 	/* 3. TODO: Allocate new PAL_USER page for the child and set result to
 	 *    TODO: NEWPAGE. */
+	palloc_get_page(PAL_USER);
 
 	/* 4. TODO: Duplicate parent's page to the new page and
 	 *    TODO: check whether parent's page is writable or not (set WRITABLE
@@ -127,6 +153,10 @@ __do_fork (void *aux) {
 	/* TODO: somehow pass the parent_if. (i.e. process_fork()'s if_) */
 	struct intr_frame *parent_if;
 	bool succ = true;
+
+	parent_if=&parent->tf;
+	memcpy(&if_, parent_if, sizeof(struct intr_frame));
+	
 
 	/* 1. Read the cpu context to local stack. */
 	memcpy (&if_, parent_if, sizeof (struct intr_frame));
@@ -199,7 +229,7 @@ process_exec (void *f_name) {
 	//}
 	/* And then load the binary */
 	success = load (file_name, &_if);
-
+	printf("ddddd");
 	/* If load failed, quit. */
 	
 	if (!success)
@@ -212,7 +242,7 @@ process_exec (void *f_name) {
 	_if.R.rdi=argc;
 	_if.R.rsi=_if.rsp+8;
 	
-	hex_dump(_if.rsp, _if.rsp, USER_STACK-_if.rsp, true);
+	//hex_dump(_if.rsp, _if.rsp, USER_STACK-_if.rsp, true);
 
 	palloc_free_page (file_name);
 	/* Start switched process. */
