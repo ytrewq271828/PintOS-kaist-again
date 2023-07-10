@@ -1,0 +1,87 @@
+Kernel command line: -q -f put multi-recurse run 'multi-recurse 15'
+0 ~ 9fc00 1
+100000 ~ 13e0000 1
+Pintos booting with: 
+	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
+	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+Calibrating timer...  114,688,000 loops/s.
+hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
+hd1:0: detected 113 sector (56 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+Formatting file system...done.
+Boot complete.
+Putting 'multi-recurse' into the file system...
+Executing 'multi-recurse 15':
+((null)) begin 15
+((null)) exec("multi-recurse 14")
+((null)) begin 14
+((null)) exec("multi-recurse 13")
+((null)) begin 13
+((null)) exec("multi-recurse 12")
+((null)) begin 12
+((null)) exec("multi-recurse 11")
+((null)) begin 11
+((null)) exec("multi-recurse 10")
+((null)) begin 10
+((null)) exec("multi-recurse 9")
+((null)) begin 9
+((null)) exec("multi-recurse 8")
+((null)) begin 8
+((null)) exec("multi-recurse 7")
+((null)) begin 7
+((null)) exec("multi-recurse 6")
+((null)) begin 6
+((null)) exec("multi-recurse 5")
+((null)) begin 5
+((null)) exec("multi-recurse 4")
+((null)) begin 4
+((null)) exec("multi-recurse 3")
+((null)) begin 3
+((null)) exec("multi-recurse 2")
+((null)) begin 2
+((null)) exec("multi-recurse 1")
+((null)) begin 1
+((null)) exec("multi-recurse 0")
+((null)) begin 0
+((null)) end 0
+multi-recurse: exit(0)
+((null)) end 1
+multi-recurse: exit(1)
+((null)) end 2
+multi-recurse: exit(2)
+((null)) end 3
+multi-recurse: exit(3)
+((null)) end 4
+multi-recurse: exit(4)
+((null)) end 5
+multi-recurse: exit(5)
+((null)) end 6
+multi-recurse: exit(6)
+((null)) end 7
+multi-recurse: exit(7)
+((null)) end 8
+multi-recurse: exit(8)
+((null)) end 9
+multi-recurse: exit(9)
+((null)) end 10
+multi-recurse: exit(10)
+((null)) end 11
+multi-recurse: exit(11)
+((null)) end 12
+multi-recurse: exit(12)
+((null)) end 13
+multi-recurse: exit(13)
+((null)) end 14
+multi-recurse: exit(14)
+((null)) end 15
+multi-recurse: exit(15)
+Execution of 'multi-recurse' complete.
+Timer: 218 ticks
+Thread: 96 idle ticks, 71 kernel ticks, 51 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 819 reads, 254 writes
+hd1:0: 113 reads, 0 writes
+Console: 2216 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

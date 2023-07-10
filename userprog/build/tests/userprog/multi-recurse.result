@@ -1,0 +1,178 @@
+FAIL
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (multi-recurse) begin 15
+  (multi-recurse) exec("multi-recurse 14")
+  (multi-recurse) begin 14
+  (multi-recurse) exec("multi-recurse 13")
+  (multi-recurse) begin 13
+  (multi-recurse) exec("multi-recurse 12")
+  (multi-recurse) begin 12
+  (multi-recurse) exec("multi-recurse 11")
+  (multi-recurse) begin 11
+  (multi-recurse) exec("multi-recurse 10")
+  (multi-recurse) begin 10
+  (multi-recurse) exec("multi-recurse 9")
+  (multi-recurse) begin 9
+  (multi-recurse) exec("multi-recurse 8")
+  (multi-recurse) begin 8
+  (multi-recurse) exec("multi-recurse 7")
+  (multi-recurse) begin 7
+  (multi-recurse) exec("multi-recurse 6")
+  (multi-recurse) begin 6
+  (multi-recurse) exec("multi-recurse 5")
+  (multi-recurse) begin 5
+  (multi-recurse) exec("multi-recurse 4")
+  (multi-recurse) begin 4
+  (multi-recurse) exec("multi-recurse 3")
+  (multi-recurse) begin 3
+  (multi-recurse) exec("multi-recurse 2")
+  (multi-recurse) begin 2
+  (multi-recurse) exec("multi-recurse 1")
+  (multi-recurse) begin 1
+  (multi-recurse) exec("multi-recurse 0")
+  (multi-recurse) begin 0
+  (multi-recurse) end 0
+  multi-recurse: exit(0)
+  (multi-recurse) end 1
+  multi-recurse: exit(1)
+  (multi-recurse) end 2
+  multi-recurse: exit(2)
+  (multi-recurse) end 3
+  multi-recurse: exit(3)
+  (multi-recurse) end 4
+  multi-recurse: exit(4)
+  (multi-recurse) end 5
+  multi-recurse: exit(5)
+  (multi-recurse) end 6
+  multi-recurse: exit(6)
+  (multi-recurse) end 7
+  multi-recurse: exit(7)
+  (multi-recurse) end 8
+  multi-recurse: exit(8)
+  (multi-recurse) end 9
+  multi-recurse: exit(9)
+  (multi-recurse) end 10
+  multi-recurse: exit(10)
+  (multi-recurse) end 11
+  multi-recurse: exit(11)
+  (multi-recurse) end 12
+  multi-recurse: exit(12)
+  (multi-recurse) end 13
+  multi-recurse: exit(13)
+  (multi-recurse) end 14
+  multi-recurse: exit(14)
+  (multi-recurse) end 15
+  multi-recurse: exit(15)
+Differences in `diff -u' format:
+- (multi-recurse) begin 15
+- (multi-recurse) exec("multi-recurse 14")
+- (multi-recurse) begin 14
+- (multi-recurse) exec("multi-recurse 13")
+- (multi-recurse) begin 13
+- (multi-recurse) exec("multi-recurse 12")
+- (multi-recurse) begin 12
+- (multi-recurse) exec("multi-recurse 11")
+- (multi-recurse) begin 11
+- (multi-recurse) exec("multi-recurse 10")
+- (multi-recurse) begin 10
+- (multi-recurse) exec("multi-recurse 9")
+- (multi-recurse) begin 9
+- (multi-recurse) exec("multi-recurse 8")
+- (multi-recurse) begin 8
+- (multi-recurse) exec("multi-recurse 7")
+- (multi-recurse) begin 7
+- (multi-recurse) exec("multi-recurse 6")
+- (multi-recurse) begin 6
+- (multi-recurse) exec("multi-recurse 5")
+- (multi-recurse) begin 5
+- (multi-recurse) exec("multi-recurse 4")
+- (multi-recurse) begin 4
+- (multi-recurse) exec("multi-recurse 3")
+- (multi-recurse) begin 3
+- (multi-recurse) exec("multi-recurse 2")
+- (multi-recurse) begin 2
+- (multi-recurse) exec("multi-recurse 1")
+- (multi-recurse) begin 1
+- (multi-recurse) exec("multi-recurse 0")
+- (multi-recurse) begin 0
+- (multi-recurse) end 0
++ ((null)) begin 15
++ ((null)) exec("multi-recurse 14")
++ ((null)) begin 14
++ ((null)) exec("multi-recurse 13")
++ ((null)) begin 13
++ ((null)) exec("multi-recurse 12")
++ ((null)) begin 12
++ ((null)) exec("multi-recurse 11")
++ ((null)) begin 11
++ ((null)) exec("multi-recurse 10")
++ ((null)) begin 10
++ ((null)) exec("multi-recurse 9")
++ ((null)) begin 9
++ ((null)) exec("multi-recurse 8")
++ ((null)) begin 8
++ ((null)) exec("multi-recurse 7")
++ ((null)) begin 7
++ ((null)) exec("multi-recurse 6")
++ ((null)) begin 6
++ ((null)) exec("multi-recurse 5")
++ ((null)) begin 5
++ ((null)) exec("multi-recurse 4")
++ ((null)) begin 4
++ ((null)) exec("multi-recurse 3")
++ ((null)) begin 3
++ ((null)) exec("multi-recurse 2")
++ ((null)) begin 2
++ ((null)) exec("multi-recurse 1")
++ ((null)) begin 1
++ ((null)) exec("multi-recurse 0")
++ ((null)) begin 0
++ ((null)) end 0
+  multi-recurse: exit(0)
+- (multi-recurse) end 1
++ ((null)) end 1
+  multi-recurse: exit(1)
+- (multi-recurse) end 2
++ ((null)) end 2
+  multi-recurse: exit(2)
+- (multi-recurse) end 3
++ ((null)) end 3
+  multi-recurse: exit(3)
+- (multi-recurse) end 4
++ ((null)) end 4
+  multi-recurse: exit(4)
+- (multi-recurse) end 5
++ ((null)) end 5
+  multi-recurse: exit(5)
+- (multi-recurse) end 6
++ ((null)) end 6
+  multi-recurse: exit(6)
+- (multi-recurse) end 7
++ ((null)) end 7
+  multi-recurse: exit(7)
+- (multi-recurse) end 8
++ ((null)) end 8
+  multi-recurse: exit(8)
+- (multi-recurse) end 9
++ ((null)) end 9
+  multi-recurse: exit(9)
+- (multi-recurse) end 10
++ ((null)) end 10
+  multi-recurse: exit(10)
+- (multi-recurse) end 11
++ ((null)) end 11
+  multi-recurse: exit(11)
+- (multi-recurse) end 12
++ ((null)) end 12
+  multi-recurse: exit(12)
+- (multi-recurse) end 13
++ ((null)) end 13
+  multi-recurse: exit(13)
+- (multi-recurse) end 14
++ ((null)) end 14
+  multi-recurse: exit(14)
+- (multi-recurse) end 15
++ ((null)) end 15
+  multi-recurse: exit(15)

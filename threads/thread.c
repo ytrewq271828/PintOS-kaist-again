@@ -227,7 +227,7 @@ thread_create (const char *name, int priority,
 	struct thread *current=thread_current();
 	/* Append to the child list of current thread*/
 	list_push_back(&current->child_list, &t->child_elem);
-	//t->parent=thread_current();
+	t->parent_if=thread_current()->tf;
 
 	/* File descriptor table initialization*/
 	/* 0 for stdout / 1 for stdin / 2+ for other opened files */

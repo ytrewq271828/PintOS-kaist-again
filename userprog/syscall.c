@@ -10,6 +10,7 @@
 #include "threads/palloc.h"
 #include "filesys/filesys.h"
 #include "filesys/file.h"
+#include "userprog/process.h"
 
 void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
@@ -38,18 +39,23 @@ syscall_init (void) {
 	 * mode stack. Therefore, we masked the FLAG_FL. */
 	write_msr(MSR_SYSCALL_MASK,
 			FLAG_IF | FLAG_TF | FLAG_DF | FLAG_IOPL | FLAG_AC | FLAG_NT);
+	
+	lock_init(&open_lock);
 }
 
 void
 address_valid(void *addr)
 {
 	struct thread *current=thread_current();
-	if(is_user_vaddr(addr) && addr!=NULL && pml4e_walk(current->pml4, addr, false)!=NULL)
+	//printf("%d\n", is_user_vaddr(addr));
+	//printf("%x\n", pml4_get_page(current->pml4, addr));
+	if(is_user_vaddr(addr) && addr!=NULL && pml4_get_page(current->pml4, addr)!=NULL)
 	{
 		return;
 	}
 	else
 	{
+		//printf("asdf");
 		exit(-1);
 	}
 }
@@ -57,7 +63,10 @@ address_valid(void *addr)
 void
 syscall_handler (struct intr_frame *f UNUSED) {
 	// TODO: Your implementation goes here.
-	printf ("system call!\n");
+	//printf ("system call!\n");
+	//struct thread *current=thread_current();
+	//printf("system call!\n");
+	//printf("%d\n", f->R.rax);
 	switch(f->R.rax)
 	{
 		case SYS_HALT:
@@ -67,9 +76,9 @@ syscall_handler (struct intr_frame *f UNUSED) {
 			exit(f->R.rdi);
 			break;
 		case SYS_FORK:
-			struct thread *current=thread_current();
-			memcpy(current->tf, f, sizeof(struct intr_frame));
-			f->R.rax=fork(f->R.rdi);
+			
+			//memcpy(&thread_current()->tf, f, sizeof(struct intr_frame));
+			f->R.rax=fork(f->R.rdi, f);
 			break;
 		case SYS_EXEC:
 			exec(f->R.rdi);
@@ -124,27 +133,27 @@ void exit(int status)
 	thread_exit();
 }
 
-int fork(const char *thread_name)
+int fork(const char *thread_name, struct intr_frame *f)
 {
 	address_valid(thread_name);
-	struct thread *current=thread_current();
-	return process_fork(thread_name, current->tf);
+	return process_fork(thread_name, f);
 }
 
 int exec(const char *cmd_line)
 {
 	address_valid(cmd_line);
 	char *executable=palloc_get_page(PAL_ZERO);
+	//char *executable=(char *)malloc(sizeof(cmd_line));
 	if(executable==NULL)
 	{
 		exit(-1);
-		return -1;
 	}
-	memcpy(executable, cmd_line, strlen(cmd_line)+1);
+	//memcpy(executable, cmd_line, strlen(cmd_line)+1);
+	strlcpy(executable, cmd_line, strlen(cmd_line)+1);
 	if(process_exec(executable)==-1)
 	{
 		exit(-1);
-		return -1;
+		//return -1;
 	}
 }
 
@@ -214,58 +223,63 @@ int read(int fd, void *buffer, unsigned size)
 	struct thread *current=thread_current();
 	if(fd==0)
 	{
-		lock_acquire(&current->open_lock);
+		lock_acquire(&open_lock);
 		int read_bytes=input_getc();
-		lock_release(&current->open_lock);
+		lock_release(&open_lock);
 		return read_bytes;
 	}
-	else if(fd==1)
+	else if(fd>=2 && fd<PGSIZE/sizeof(current->descriptor_table[2]))
 	{
-		return -1;
+		struct file *file_fd=current->descriptor_table[fd];
+		lock_acquire(&open_lock);
+		if(file_fd==NULL)
+		{
+			lock_release(&open_lock);
+			return -1;
+		}
+		int read_bytes=file_read(file_fd, buffer, size);
+		lock_release(&open_lock);
+		return read_bytes;
 	}
 	else
 	{
+		return -1;
 		
-		struct file *file_fd=current->descriptor_table[fd];
-		lock_acquire(&current->open_lock);
-		if(file_fd==NULL)
-		{
-			lock_release(&current->open_lock);
-			return -1;
-		}
-		int read_bytes=file_read(fd, buffer, size);
-		lock_release(&current->open_lock);
-		return read_bytes;
 	}
 }
 
 int write(int fd, void *buffer, unsigned size)
 {
 	address_valid(buffer);
+	//printf("write : %d", fd);
 	struct thread *current=thread_current();
-	if(fd==0)
+	if(fd==1)
 	{
-		return -1;
+		//lock_acquire(&open_lock);
+		putbuf(buffer, size);
+		//lock_release(&open_lock);
+		return size;
 	}
-	if(fd==1)	{
-		lock_acquire(&current->open_lock);
-		int write_bytes=putbuf(buffer, size);
-		lock_release(&current->open_lock);
-		return write_bytes;
+	else if(fd>=2 && fd<PGSIZE/sizeof(current->descriptor_table[2]))	
+	{
+		lock_acquire(&open_lock);
+		struct file *file_fd=current->descriptor_table[fd];
+
+		if(file_fd==NULL)
+		{
+			lock_release(&open_lock);
+			return -1;
+		}
+		else
+		{
+			int write_bytes=file_write(file_fd, buffer, size);
+			lock_release(&open_lock);
+			return write_bytes;
+		}
 	}
 	else
 	{
-		
-		struct file *file_fd=current->descriptor_table[fd];
-		lock_acquire(&current->open_lock);
-		if(file_fd==NULL)
-		{
-			lock_release(&current->open_lock);
-			return -1;
-		}
-		int write_bytes=file_write(fd, buffer, size);
-		lock_release(&current->open_lock);
-		return write_bytes;
+		return -1;
 	}
 }
 
@@ -282,6 +296,10 @@ void seek(int fd, unsigned position)
 unsigned tell(int fd)
 {
 	struct thread *current=thread_current();
+	if(fd<2)
+	{
+		return;
+	}
 	struct file *file=current->descriptor_table[fd];
 	if(file!=NULL)
 	{
@@ -292,12 +310,20 @@ unsigned tell(int fd)
 void close(int fd)
 {
 	struct thread *current=thread_current();
-	struct file *file=current->descriptor_table[fd];
-	if(file!=NULL)
+	if(fd<2 || fd>=PGSIZE/sizeof(current->descriptor_table[2]))
 	{
-		lock_acquire(&current->open_lock);
+		return;
+	}
+	struct file *file=current->descriptor_table[fd];
+	if(file==NULL)
+	{
+		return;
+	}
+	else
+	{
+		lock_acquire(&open_lock);
 		file_close(file);
 		current->descriptor_table[fd]=NULL;
-		lock_release(&current->open_lock);
+		lock_release(&open_lock);
 	}
 }

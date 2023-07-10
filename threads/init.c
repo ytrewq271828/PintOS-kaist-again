@@ -244,7 +244,11 @@ run_task (char **argv) {
 	if (thread_tests){
 		run_test (task);
 	} else {
-		process_wait (process_create_initd (task));
+		//process_wait (process_create_initd (task));
+		tid_t pci=process_create_initd(task);
+		//for(;;);
+		//printf("TID : %d\n", pci);
+		process_wait(pci);
 	}
 #else
 	run_test (task);

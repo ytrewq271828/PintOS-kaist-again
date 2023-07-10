@@ -123,7 +123,7 @@ sema_up (struct semaphore *sema) {
 		unblocked=1;
 	}
 	sema->value++;
-	if(whether_to_yield() && unblocked==1) // If priority of current thread is larger than that of ready_list
+	if(whether_to_yield() && unblocked==1 && !intr_context()) // If priority of current thread is larger than that of ready_list
 	{
 		thread_yield();	
 	}
